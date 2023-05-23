@@ -18,14 +18,21 @@
 # Output of the go coverage tool, specifically when used with LiteIDE
 *.out
 
-# Dependency directories (remove the comment below to include it)
-# vendor/
-
 # Go workspace file
 go.work
-
+go.work.sum
+go.sum
 # End of https://www.toptal.com/developers/gitignore/api/go
 
+# yolo
+*.pt
+
+# proto buffer
 *.proto
+
+# python
+__pycache__
+
+# garbage
 *.jpeg
 *.mp4
