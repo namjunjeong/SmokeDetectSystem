@@ -1,4 +1,6 @@
-grpc streaming use goland<br>
+grpc streaming use golang<br>
+server : python<br>
+client : golang<br>
 
 # reference
 https://github.com/pahanini/go-grpc-bidirectional-streaming-example<br>
