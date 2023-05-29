@@ -8,6 +8,6 @@ client file is client.go <br>
 >go build client.go<br>
 >client.go video.mp4
 # reference
-https://github.com/pahanini<br>go-grpc-bidirectional-streaming-example<br>
+https://github.com/pahanini/go-grpc-bidirectional-streaming-example<br>
 https://github.com/u2takey/ffmpeg-go <br>
 https://github.com/grpc/grpc-go <br>
