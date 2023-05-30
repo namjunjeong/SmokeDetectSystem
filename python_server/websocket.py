@@ -5,11 +5,12 @@ import base64
 import datetime
 
 class Wss_Server(threading.Thread):
-    def __init__ (self, addr, port, container):
+    def __init__ (self, addr, port, container, fps):
         super(Wss_Server, self).__init__()
         self.port = port
         self.server_addr = addr
         self.container = container
+        self.sleep_time = 1/fps
         self.CLIENTS = set()
     
     def logger(self, message, **kwagrs):
@@ -36,13 +37,13 @@ class Wss_Server(threading.Thread):
 
     async def broadcast_msg(self):
         while True:
+            await asyncio.sleep(self.sleep_time)
             if len(self.container) != 0 :
                 self.logger("send img")
                 message = base64.b64encode(self.container.pop(0))
                 await self.broadcast(message)
             else :
-                self.logger("no img")
-                await asyncio.sleep(0.5)
+                self.logger("noimg")
             
     async def start_server(self):
         async with websockets.serve(self.handler, self.server_addr, self.port):
