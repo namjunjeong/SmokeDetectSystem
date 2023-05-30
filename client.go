@@ -3,20 +3,30 @@ package main
 import (
 	"bytes"
 	"context"
+	"image"
+	"image/png"
 	"io"
 	"log"
 	"os"
+	"os/exec"
 	"strconv"
+	"time"
 
 	pb "github.com/namjunjeong/grpc_video_stream/proto"
 	"github.com/namjunjeong/grpc_video_stream/utils"
-	ffmpeg "github.com/u2takey/ffmpeg-go"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
 
 func main() {
 	video_name := os.Args[1]
+	frame_rate := os.Args[2]
+	frame_rate_int, _ := strconv.Atoi(frame_rate)
+
+	_, err := exec.Command("ffmpeg", "-i", video_name, "-r", frame_rate+"/1", "%01d.png").Output()
+	if err != nil {
+		log.Fatalf("exec error : %v", err)
+	}
 
 	conn, err := grpc.Dial(":50051", grpc.WithTransportCredentials(insecure.NewCredentials()))
 	if err != nil {
@@ -34,19 +44,26 @@ func main() {
 
 	//sender function
 	go func() {
-		var img_io io.Reader
-		var i uint64
-		var buf bytes.Buffer
+		var img image.Image
+		var i uint64 = 1
+		buf := new(bytes.Buffer)
 
-		vid := ffmpeg.Input(video_name)
-		for i = 1; i <= 10; i++ {
-			img_io = utils.FrameToJpeg(vid, i*200)
-			buf.ReadFrom(img_io)
+		for {
+			f, err := os.Open(strconv.FormatUint(i, 10) + ".png")
+			if err != nil {
+				utils.Logger("load finished")
+				break
+			}
+			img, _, _ = image.Decode(f)
+			_ = png.Encode(buf, img)
 			req := pb.Image{Id: i, Data: buf.Bytes()}
 			if err := stream.Send(&req); err != nil {
 				log.Fatalf("sending error : %v", err)
 			}
+			utils.Logger("image send")
 			buf.Reset()
+			i++
+			time.Sleep(time.Duration(1/frame_rate_int) * time.Second)
 		}
 		if err := stream.CloseSend(); err != nil {
 			log.Fatalf("closing error : %v", err)
