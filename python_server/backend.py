@@ -26,7 +26,7 @@ class Streaming(stream_pb2_grpc.StreamingServicer):
             response = stream_pb2.Result()
             response.smoke = False if len(box_data)==0 else True
             
-            container.append(plotted_img)
+            container.append([plotted_img, 'X' if len(box_data)==0 else 'O'])
             
             yield response
 
