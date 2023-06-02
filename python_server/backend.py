@@ -26,7 +26,7 @@ class Streaming(stream_pb2_grpc.StreamingServicer):
             response = stream_pb2.Result()
             response.smoke = False if len(box_data)==0 else True
             
-            container.append([plotted_img, 'X' if len(box_data)==0 else 'O'])
+            container.append(plotted_img)
             
             yield response
 
@@ -40,7 +40,9 @@ if __name__=="__main__":
     wss_thread = Wss_Server(addr = "localhost", port=3001,container= container, fps=fps)
     wss_thread.daemon = True # main 죽으면 같이 죽도록 설정
     wss_thread.start() #websocket 서버 실행
-    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10))
+    
+    grpc_options = [('grpc.max_send_message_length', 32000000), ('grpc.max_receive_message_length', 32000000)]
+    server = grpc.server(futures.ThreadPoolExecutor(max_workers=10), options=grpc_options)
     stream_pb2_grpc.add_StreamingServicer_to_server(Streaming(container, model_name=model), server)
     logger("****************************************")
     logger("*        🟢 grpc server started        *")

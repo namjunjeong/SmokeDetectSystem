@@ -35,7 +35,9 @@ func main() {
 	defer conn.Close()
 
 	client := pb.NewStreamingClient(conn)
-	stream, err := client.ImgStream(context.Background())
+	maxRecvSizeOption := grpc.MaxCallRecvMsgSize(32 * 10e6)
+	maxCallSizeOption := grpc.MaxCallSendMsgSize(32 * 10e6)
+	stream, err := client.ImgStream(context.Background(), maxRecvSizeOption, maxCallSizeOption)
 	if err != nil {
 		log.Fatalf("stream open error : %v", err)
 	}
