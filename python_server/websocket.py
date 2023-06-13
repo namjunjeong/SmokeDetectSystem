@@ -13,7 +13,7 @@ class Wss_Server(threading.Thread):
         self.port = port
         self.server_addr = addr
         self.container = container
-        self.sleep_time = 1/fps
+        self.sleep_time = (1/fps)/2
         self.CLIENTS = set()
     
     def logger(self, message, **kwagrs):
@@ -45,8 +45,7 @@ class Wss_Server(threading.Thread):
     async def broadcast_msg(self):
         #여기서 반복하면서 데이터 처리함
         while True:
-            await asyncio.sleep(self.sleep_time)
-            if len(self.container) != 0 : 
+            if len(self.container) != 0 :
                 #grpc와 같이 물려있는 container를 계속 체크. 데이터가 들어오면 처리
                 self.logger("send img")
                 
@@ -55,14 +54,14 @@ class Wss_Server(threading.Thread):
                 #아래는 이미지를 base64로 바꾸는 과정
                 imgarray = Image.fromarray(cv2.cvtColor(img, cv2.COLOR_BGR2RGB)) #색 보정 및 PIL image로 변경
                 rawbyte = io.BytesIO()
-                imgarray.save(rawbyte, "PNG")
+                imgarray.save(rawbyte, "JPEG")
                 rawbyte.seek(0)
                 #맨 앞에 smoking state piggyback
                 base = base64.b64encode(smoking.encode('ascii')) + base64.b64encode(rawbyte.read())
 
                 await self.broadcast(base)
             else :
-                self.logger("noimg")
+                await asyncio.sleep(self.sleep_time)
             
     async def start_server(self):
         async with websockets.serve(self.handler, self.server_addr, self.port):
