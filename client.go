@@ -14,6 +14,7 @@ import (
 
 	pb "github.com/namjunjeong/grpc_video_stream/proto"
 	"github.com/namjunjeong/grpc_video_stream/utils"
+	"github.com/stianeikeland/go-rpio/v4"
 	"google.golang.org/grpc"
 	"google.golang.org/grpc/credentials/insecure"
 )
@@ -44,30 +45,40 @@ func main() {
 	ctx := stream.Context()
 	done := make(chan bool)
 
+	err = rpio.Open()
+	if err != nil {
+		log.Fatalf("rpio open failed : %v", err)
+	}
+	led := rpio.Pin(4)
+	led.Output()
+
 	//sender function
 	go func() {
 		var img image.Image
 		var i uint64 = 1
+		var start, end time.Time
+		var runtime int
+		sleep_time := (1 / float64(frame_rate_int)) * 1000000000
 		buf := new(bytes.Buffer)
-
 		for {
 			f, err := os.Open(strconv.FormatUint(i, 10) + ".jpeg")
 			if err != nil {
 				utils.Logger("load failed")
 				break
 			}
-			utils.Logger("encode start")
 			img, _, _ = image.Decode(f)
 			_ = jpeg.Encode(buf, img, nil)
 			req := pb.Image{Id: i, Data: buf.Bytes()}
-			utils.Logger("encode finished")
 			if err := stream.Send(&req); err != nil {
 				log.Fatalf("sending error : %v", err)
 			}
 			utils.Logger("image send")
+			end = time.Now()
+			runtime = int(end.Sub(start))
+			time.Sleep((time.Duration(sleep_time) * time.Nanosecond) - (time.Duration(runtime) * time.Nanosecond))
+			start = time.Now()
 			buf.Reset()
 			i++
-			time.Sleep(time.Duration(1/frame_rate_int) * time.Second)
 		}
 		if err := stream.CloseSend(); err != nil {
 			log.Fatalf("closing error : %v", err)
@@ -87,6 +98,11 @@ func main() {
 				log.Fatalf("receive error : %v", err)
 			}
 			smoke = response.Smoke
+			if smoke = response.Smoke; smoke == true {
+				led.High()
+			} else {
+				led.Low()
+			}
 			utils.Logger("smoke state : " + strconv.FormatBool(smoke))
 		}
 	}()
