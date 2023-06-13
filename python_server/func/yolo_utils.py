@@ -8,7 +8,7 @@ class Yolo_Utils_Class():
     def yolo_predict(self, pil_img, ind=1, with_image=False, save=False):
         result = self.model.predict(pil_img, verbose=False)
         plot_img = result[0].plot()
-        data = result[0].boxes.data.tolist()
+        data = result[0].boxes.data.numpy()
         
         if save:
             cv2.imwrite(f'{str(ind)}.jpeg',plot_img)#save processed image
