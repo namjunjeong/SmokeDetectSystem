@@ -4,7 +4,7 @@ import (
 	"bytes"
 	"context"
 	"image"
-	"image/png"
+	"image/jpeg"
 	"io"
 	"log"
 	"os"
@@ -23,7 +23,7 @@ func main() {
 	frame_rate := os.Args[2]
 	frame_rate_int, _ := strconv.Atoi(frame_rate)
 
-	_, err := exec.Command("ffmpeg", "-i", video_name, "-r", frame_rate+"/1", "%01d.png").Output()
+	_, err := exec.Command("ffmpeg", "-i", video_name, "-r", frame_rate+"/1", "%01d.jpeg").Output()
 	if err != nil {
 		log.Fatalf("exec error : %v", err)
 	}
@@ -51,14 +51,16 @@ func main() {
 		buf := new(bytes.Buffer)
 
 		for {
-			f, err := os.Open(strconv.FormatUint(i, 10) + ".png")
+			f, err := os.Open(strconv.FormatUint(i, 10) + ".jpeg")
 			if err != nil {
-				utils.Logger("load finished")
+				utils.Logger("load failed")
 				break
 			}
+			utils.Logger("encode start")
 			img, _, _ = image.Decode(f)
-			_ = png.Encode(buf, img)
+			_ = jpeg.Encode(buf, img, nil)
 			req := pb.Image{Id: i, Data: buf.Bytes()}
+			utils.Logger("encode finished")
 			if err := stream.Send(&req); err != nil {
 				log.Fatalf("sending error : %v", err)
 			}
