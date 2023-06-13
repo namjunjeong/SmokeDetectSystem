@@ -8,10 +8,9 @@ import cv2
 from PIL import Image
 
 class Wss_Server(threading.Thread):
-    def __init__ (self, addr, port, container, fps):
+    def __init__ (self, port, container, fps):
         super(Wss_Server, self).__init__()
         self.port = port
-        self.server_addr = addr
         self.container = container
         self.sleep_time = (1/fps)/2
         self.CLIENTS = set()
@@ -64,7 +63,7 @@ class Wss_Server(threading.Thread):
                 await asyncio.sleep(self.sleep_time)
             
     async def start_server(self):
-        async with websockets.serve(self.handler, self.server_addr, self.port):
+        async with websockets.serve(self.handler, port=self.port):
             self.logger("****************************************")
             self.logger("*         🟢wss server started         *")
             self.logger(f'*        listening on port : {self.port}      *')
@@ -76,6 +75,6 @@ class Wss_Server(threading.Thread):
 
 #test in module
 if __name__ == "__main__":
-    wss_thread = Wss_Server(addr = "localhost", port=3001)
+    wss_thread = Wss_Server(port=3001)
     wss_thread.daemon = True # main 죽으면 같이 죽도록 설정
     wss_thread.start() #websocket 서버 실행
