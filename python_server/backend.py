@@ -70,7 +70,7 @@ if __name__=="__main__":
     fps = int(input("input FPS : "))
     smoke_time = float(input("input time(second) to judge as smoke : "))
     container = []
-    wss_thread = Wss_Server(addr = "localhost", port=3001,container= container, fps=fps)
+    wss_thread = Wss_Server(port=3001,container= container, fps=fps)
     wss_thread.daemon = True # main 죽으면 같이 죽도록 설정
     wss_thread.start() #websocket 서버 실행
     
