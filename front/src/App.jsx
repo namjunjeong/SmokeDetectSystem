@@ -7,7 +7,7 @@ const App = () => {
   const [isSmoking, setIsSmoking] = useState(false);
 
   useEffect(() => {
-    const ws = new WebSocket("ws://localhost:3001");
+    const ws = new WebSocket(process.env.REACT_APP_WEB_SOCKET_URL);
 
     // Set the binaryType to 'blob'
     ws.binaryType = "arraybuffer"; //blob 대신 arraybuffer 형태로 가져오기
