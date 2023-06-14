@@ -45,12 +45,17 @@ func main() {
 	ctx := stream.Context()
 	done := make(chan bool)
 
+	pinnum := []int{4, 17, 18, 27, 22, 23, 24, 25}
+	rpiopin := make([]rpio.Pin, len(pinnum))
 	err = rpio.Open()
 	if err != nil {
 		log.Fatalf("rpio open failed : %v", err)
 	}
-	led := rpio.Pin(4)
-	led.Output()
+	for i, num := range pinnum {
+		rpiopin[i] = rpio.Pin(num)
+		rpiopin[i].Output()
+		rpiopin[i].Low()
+	}
 
 	//sender function
 	go func() {
@@ -99,9 +104,9 @@ func main() {
 			}
 			smoke = response.Smoke
 			if smoke = response.Smoke; smoke == true {
-				led.High()
+				rpiopin[0].High()
 			} else {
-				led.Low()
+				rpiopin[0].Low()
 			}
 			utils.Logger("smoke state : " + strconv.FormatBool(smoke))
 		}
